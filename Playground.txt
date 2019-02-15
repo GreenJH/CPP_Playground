@@ -1,0 +1,157 @@
+#include <iostream>
+#include <windows.h>
+#include <conio.h>
+#include <vector>
+using namespace std;
+
+class Character
+{
+private:
+
+protected:
+	int health;
+	int armor;
+	int attackDamage;
+public:
+	virtual int& getHealth()
+	{
+		return health;
+	}
+
+	virtual void setAttackDamage(int damage) = 0;
+
+	virtual int getAttackDamage()
+	{
+		return attackDamage;
+	}
+
+	virtual void damageToHealth(int damage) = 0;
+};
+
+class Player : public Character
+{
+public:
+	Player()
+	{
+		health = 10;
+		armor = 5;
+		attackDamage = 2;
+	}
+
+	int& getHealth() override
+	{
+		return health;
+	}
+
+	void setAttackDamage(int damage) override
+	{
+		this->attackDamage = damage;
+	}
+
+	int getAttackDamage() override
+	{
+		return attackDamage;
+	}
+
+	virtual void damageToHealth(int damage)
+	{
+		this->health -= damage;
+	}
+};
+
+class Enemy : public Character
+{
+public:
+	Enemy()
+	{
+		health = 20;
+		armor = 10;
+		attackDamage = 2;
+	}
+
+	int& getHealth() override
+	{
+		return health;
+	}
+
+	void setAttackDamage(int damage) override
+	{
+		this->attackDamage = damage;
+	}
+
+	int getAttackDamage() override
+	{
+		return attackDamage;
+	}
+
+	virtual void damageToHealth(int damage)
+	{
+		this->health -= damage;
+	}
+};
+
+class Manager
+{
+public:
+	bool m_quit = false;
+private:
+	const int m_width = 10;
+	const int m_height = 10;
+
+	Player P1;
+	Enemy E1;
+	Character* Player1 = &P1;
+	Character* Enemy1 = &E1;
+public:
+	void Run()
+	{
+		while (!m_quit)
+		{
+			Draw();
+			Input();
+		}
+	}
+
+	void Draw()
+	{
+		system("cls");
+		cout << "Player1 Health: " << Player1->getHealth() << endl;
+		cout << "Player1 Attack Damage: " << Player1->getAttackDamage() << endl;
+		cout << "Enemy1 Health: " << Enemy1->getHealth() << endl;
+		cout << "Enemy1 Attack Damage: " << Enemy1->getAttackDamage() << endl;
+	}
+
+	void Input()
+	{
+		if (_kbhit())
+		{
+			char current = _getch();
+
+			switch (current)
+			{
+			case 'q':
+				break;
+			case 'a':
+				Attack(Enemy1, Player1);
+				break;
+			case 'b':
+				Player1->setAttackDamage(5);
+			default:
+				break;
+			}
+		}
+	}
+
+	void Attack(Character* first_character, Character* second_character)
+	{
+		int damage = second_character->getAttackDamage();
+		first_character->damageToHealth(damage);
+	}
+};
+
+int main()
+{
+	Manager GameManage;
+	GameManage.Run();
+	getchar();
+}
