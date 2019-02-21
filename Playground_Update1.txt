@@ -1,0 +1,224 @@
+#include <iostream>
+#include <windows.h>
+#include <conio.h>
+#include <vector>
+using namespace std;
+
+class Character
+{
+private:
+
+protected:
+	int health;
+	int armor;
+	int attackDamage;
+public:
+	virtual int& getHealth()
+	{
+		return health;
+	}
+
+	virtual void setAttackDamage(int damage) = 0;
+
+	virtual int getAttackDamage()
+	{
+		return attackDamage;
+	}
+
+	virtual void damageToHealth(int damage) = 0;
+};
+
+class Player : public Character
+{
+public:
+	Player()
+	{
+		health = 10;
+		armor = 5;
+		attackDamage = 2;
+	}
+
+	int& getHealth() override
+	{
+		return health;
+	}
+
+	void setAttackDamage(int damage) override
+	{
+		this->attackDamage = damage;
+	}
+
+	int getAttackDamage() override
+	{
+		return attackDamage;
+	}
+
+	virtual void damageToHealth(int damage)
+	{
+		this->health -= damage;
+	}
+};
+
+class Enemy : public Character
+{
+public:
+	Enemy()
+	{
+		health = 20;
+		armor = 10;
+		attackDamage = 2;
+	}
+
+	int& getHealth() override
+	{
+		return health;
+	}
+
+	void setAttackDamage(int damage) override
+	{
+		this->attackDamage = damage;
+	}
+
+	int getAttackDamage() override
+	{
+		return attackDamage;
+	}
+
+	virtual void damageToHealth(int damage)
+	{
+		this->health -= damage;
+	}
+};
+
+class Manager
+{
+public:
+	bool m_quit = false;
+private:
+	const int m_width = 10;
+	const int m_height = 10;
+
+	Player P1;
+	Enemy E1;
+	Character* Player1 = &P1;
+	Character* Enemy1 = &E1;
+	vector<Player*> ai;
+	int target = 0;
+	int attackMin = 1;
+public:
+	~Manager()
+	{
+		for (int i = 0; i < ai.size(); i++)
+		{
+			Player* current = ai.back();
+			ai.pop_back();
+			delete current;
+		}
+	}
+
+	void Run()
+	{
+		while (!m_quit)
+		{
+			Draw();
+			Input();
+			CheckCondition();
+		}
+	}
+
+	void Draw()
+	{
+		system("cls");
+		cout << "Player1 Health: " << Player1->getHealth() << endl;
+		cout << "Player1 Attack Damage: " << Player1->getAttackDamage() << endl;
+		cout << "Enemy1 Health: " << Enemy1->getHealth() << endl;
+		cout << "Enemy1 Attack Damage: " << Enemy1->getAttackDamage() << endl;
+		cout << "Number of AI: " << ai.size() << endl;
+		cout << endl << endl;
+
+		for (int i = 0; i < ai.size(); i++)
+		{
+			cout << "AI " << i << " Health: " << ai[i]->getHealth() << endl;
+		}
+
+		cout << endl;
+
+		if (CheckAI(target))
+			cout << "You are targeting AI " << target << endl;
+		else
+		{
+			cout << "Your target does not exist" << endl;
+			target = 0;
+		}
+
+		cout << endl;
+		cout << "Press 's' to shoot, Press 'b' to boost your damage, Press 'a' to select/change a target" << endl;
+	}
+
+	bool CheckAI(int &target)
+	{
+		if (target < ai.size() || target == 0)
+			return true;
+		else
+			return false;
+	}
+
+	void CheckCondition() {
+		for (int i = 0; i < ai.size(); i++)
+		{
+			if (ai[i]->getHealth() <= 0)
+			{
+				ai.erase(ai.begin() + i);
+			}
+		}
+	}
+
+	void Input()
+	{
+		if (_kbhit())
+		{
+			char current = _getch();
+
+			switch (current)
+			{
+			case 'q':
+				m_quit = true;
+				break;
+			case 'a':
+				Action();
+				break;
+			case 's':
+				if(ai.size()>0)
+					Attack(ai[target], Player1);
+				break;
+			case 'b':
+				Player1->setAttackDamage(5);
+				break;
+			case 'n':
+				ai.push_back(new Player);
+				break;
+			default:
+				break;
+			}
+		}
+	}
+
+	void Action() {
+		cout << "Who to attack?" << endl;
+		cin >> target;
+
+	}
+
+	void Attack(Character* first_character, Character* second_character)
+	{
+		int damage = second_character->getAttackDamage();
+		first_character->damageToHealth(damage);
+	}
+};
+
+int main()
+{
+	Manager GameManage;
+	GameManage.Run();
+	getchar();
+}
